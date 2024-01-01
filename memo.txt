@@ -1,0 +1,120 @@
+finish_animation.json の構造
+=========================
+
+下記で読み込めばわかる。
+
+https://lottiefiles.github.io/lottie-docs/playground/json_editor/
+
+基本構造はこれ。layers に色々データが入っている。
+
+JSON Scheme はこれ
+https://lottiefiles.github.io/lottie-docs/schema/#/$defs/helpers/transform
+
+nm が説明文っぽい。
+
+~~~~~~~~~~~~~~~~
+{
+    "v": "5.5.10",
+    "fr": 24,
+    "ip": 0,
+    "op": 68,
+    "w": 375,
+    "h": 375,
+    "nm": "finish_animation 2",
+    "ddd": 0,
+    "assets": [],
+    "layers": [ ...色々データが入っている... ],
+    "markers": []
+}
+~~~~~~~~~~~~~~~~
+
+layers は、オブジェクトの配列。
+それぞれが Shape layer と呼ばれ、図形を表す。
+
+~~~~~~~~~~~~~~~~
+[
+  {...},
+  {...},
+  {...},
+]
+~~~~~~~~~~~~~~~~
+
+Shape layer はこんな構造で、 ks 配下はアニメーションの設定、shapes 配下に図形が入っている。
+
+~~~~~~~~~~~~~~~~
+{
+    "ddd": 0,
+    "ind": 1,
+    "ty": 4,
+    "nm": "circle_part2_8",
+    "sr": 1,
+    "ks": {
+      "o": {...},
+      "r": {...},
+      "p": {...},
+      "a": {...},
+      "s": {...},
+    },
+    "ao": 0,
+    "shapes": [...],
+    "ip": -1,
+    "op": 61,
+    "st": -447,
+    "bm": 0
+}
+~~~~~~~~~~~~~~~~
+
+shapes のスキーマはこれ
+https://lottiefiles.github.io/lottie-docs/schema/#/$defs/shapes/shape-list
+
+"c", "fc", "gc", "hc" のどれかが色要素らしい。
+
+
+メモ 色を表す要素
+====================
+
+"c": {
+    "title": "Color",
+    "$ref": "#/$defs/animated-properties/color-value"
+},
+
+"fc": {
+    "title": "Fill Color",
+    "$ref": "#/$defs/helpers/color",
+    "default": [
+        0,
+        0,
+        0
+    ]
+},
+
+"sc": {
+    "title": "Color",
+    "description": "Color of the layer, unlike most other places, the color is a #rrggbb hex string",
+    "type": "string",
+    "default": ""
+},
+
+"hc": {
+    "title": "Highlight Color",
+    "$ref": "#/$defs/animated-properties/color-value"
+},
+
+"g": {
+    "title": "Colors",
+    "description": "Gradient colors",
+    "$ref": "#/$defs/animated-properties/gradient-colors"
+}
+
+"color"  : {
+    "type": "array",
+    "title": "Color",
+    "description": "Color as a [r, g, b] array with values in [0, 1]",
+    "items": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+    },
+    "minItems": 3,
+    "maxItems": 4
+},

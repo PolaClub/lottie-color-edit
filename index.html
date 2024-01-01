@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Lottie アニメーションと色一覧</title>
+    <style>
+        #drop-area {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+        }
+        #color-table {
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        #color-table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+        .color-box {
+            width: 50px;
+            height: 50px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div id="drop-area">ここにファイルをドラッグアンドドロップ</div>
+<div id="animation"></div>
+<table id="color-table">
+    <tr>
+        <th>色</th>
+        <th>カラーコード</th>
+        <th>新しい色</th>
+        <th>新しいカラーコード</th>
+    </tr>
+</table>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.5/lottie.min.js"></script>
+<script src="./logic.js"></script>
+
+</body>
+</html>
