@@ -106,6 +106,22 @@ function replaceColorInAnimationData(data, oldColor, newColor) {
                     data[key].k = [newRgb[0], newRgb[1], newRgb[2], data[key].k[3]]; // Replace with new color
                 }
             }
+            // Gradient color
+            if (key === 'g' && data[key].k && data[key].k.k && Array.isArray(data[key].k.k) && data[key].k.k.length === 12) {
+                [[1,4], [5,8], [9,12]].forEach(function(range){
+                    var hexColor = rgbToHex(data[key].k.k.slice(range[0], range[1]).map(function(value) {
+                      return Math.floor(value * 255);
+                    }).join(','));
+                    if (hexColor === oldColor) {
+                        var newRgb = hexToRgb(newColor);
+                        var oldRgb = data[key].k.k;
+                        oldRgb[range[0]] = newRgb[0];
+                        oldRgb[range[0]+1] = newRgb[1];
+                        oldRgb[range[0]+2] = newRgb[2];
+                        data[key].k.k = oldRgb;
+                    }
+                });
+            }
             replaceColorInAnimationData(data[key], oldColor, newColor);
         });
     } else if (Array.isArray(data)) {
@@ -124,6 +140,15 @@ function findColors(data, colors) {
                 });
                 colors.add(rgb.join(','));
             }
+            // Gradient color
+            if (key === 'g' && data[key].k && data[key].k.k && Array.isArray(data[key].k.k) && data[key].k.k.length === 12) {
+                [[1,4], [5,8], [9,12]].forEach(function(range){
+                    rgb = data[key].k.k.slice(range[0], range[1]).map(function(value) {
+                        return Math.floor(value * 255);
+                    });
+                    colors.add(rgb.join(','));
+                })
+            }
             findColors(data[key], colors);
         });
     } else if (Array.isArray(data)) {
@@ -134,7 +159,6 @@ function findColors(data, colors) {
 }
 
 function rgbToHex(rgb) {
-    console.log('rgb:', rgb);
     rgb = rgb.split(',').map(function(value) { return parseInt(value, 10); });
     return '#' + rgb.map(function(value) {
         return ('0' + value.toString(16)).slice(-2);
