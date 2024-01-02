@@ -19,7 +19,7 @@ document.getElementById('drop-area').ondrop = function(evt) {
         animationData = JSON.parse(e.target.result);
         loadAnimation();
         displayColors(animationData);
-        document.getElementById('drop-area').style.display = 'none';
+        // document.getElementById('drop-area').style.display = 'none';
         document.getElementById('color-table').style.display = 'block';
         document.getElementById('animation').style.display = 'block';
     };
@@ -28,7 +28,7 @@ document.getElementById('drop-area').ondrop = function(evt) {
 };
 
 document.getElementById('reset-button').addEventListener('click', function() {
-    document.getElementById('drop-area').style.display = 'block';
+    // document.getElementById('drop-area').style.display = 'block';
     document.getElementById('color-table').style.display = 'none';
     document.getElementById('animation').style.display = 'none';
 
@@ -85,7 +85,7 @@ function updateColorMapping(hexOrigColor, hexNewColor, index) {
         updateAnimationColors(hexOrigColor);
     } else {
         colorMapping[hexOrigColor] = hexToRgbone(hexOrigColor);
-        document.getElementById('new-color-box-' + index).style.backgroundColor = hexOrigColor;
+        document.getElementById('new-color-box-' + index).style.backgroundColor = '';
         updateAnimationColors(hexOrigColor);
     }
 }
