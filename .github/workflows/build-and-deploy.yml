@@ -15,7 +15,9 @@ jobs:
         PORT: ${{ secrets.PORT }}
         KEY: ${{ secrets.KEY }}
       run: |
+        mkdir dist
+        mv * ./dist || true
         printf '%s' "$KEY" > id_rsa
         chmod 400 id_rsa
-        rsync --exclude '.git*' --exclude 'id_rsa' --delete -av -e "ssh -p $PORT -i id_rsa -o StrictHostKeyChecking=no" --rsync-path 'sudo rsync' --port=$PORT ./ $USERNAME@$HOST:/var/www/html/lottie-color-edit
+        rsync --delete -av -e "ssh -p $PORT -i id_rsa -o StrictHostKeyChecking=no" --rsync-path 'sudo rsync' --port=$PORT dist/ $USERNAME@$HOST:/var/www/html/lottie-color-edit
         rm -f id_rsa
