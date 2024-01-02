@@ -17,5 +17,5 @@ jobs:
       run: |
         printf '%s' "$KEY" > id_rsa
         chmod 400 id_rsa
-        rsync --exclude --exclude '.git*' --delete -av -e "ssh -p $PORT -i id_rsa -o StrictHostKeyChecking=no" --rsync-path 'sudo rsync' --port=$PORT ./ $USERNAME@$HOST:/var/www/html/lottie-color-edit
+        rsync --exclude '.git' --delete -av -e "ssh -p $PORT -i id_rsa -o StrictHostKeyChecking=no" --rsync-path 'sudo rsync' --port=$PORT ./ $USERNAME@$HOST:/var/www/html/lottie-color-edit
         rm -f id_rsa
