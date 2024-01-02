@@ -1,6 +1,9 @@
 var animationData;
 var animationInstance;
 var colorMapping = {};
+// オリジナルのカラーコードから、何番目に見つかったかどうかの配列を調査
+var colorGroup = {};
+var foundIndex = 0;
 
 document.getElementById('drop-area').ondragover = function(evt) {
     evt.preventDefault();
@@ -16,7 +19,6 @@ document.getElementById('drop-area').ondrop = function(evt) {
         animationData = JSON.parse(e.target.result);
         loadAnimation();
         displayColors(animationData);
-
         document.getElementById('drop-area').style.display = 'none';
         document.getElementById('color-table').style.display = 'block';
         document.getElementById('animation').style.display = 'block';
@@ -40,8 +42,6 @@ document.getElementById('save-button').addEventListener('click', function() {
     downloadJson(animationData, 'animation.json');
 });
 
-
-
 function loadAnimation() {
     if (animationInstance) {
         animationInstance.destroy();
@@ -58,13 +58,13 @@ function loadAnimation() {
 
 function displayColors() {
     var colors = new Set();
+    foundIndex = 0;
     findColors(animationData, colors);
 
     var table = document.getElementById('color-table');
     table.innerHTML = '<tr><th>色</th><th>カラーコード</th><th>新しい色</th><th>新しいカラーコード</th></tr>';
 
-    Array.from(colors).forEach(function(rgb, index) {
-        var hexColor = rgbToHex(rgb);
+    Array.from(colors).forEach(function(hexColor, index) {
         var row = table.insertRow();
         var colorCell = row.insertCell();
         var hexCell = row.insertCell();
@@ -78,55 +78,53 @@ function displayColors() {
     });
 }
 
-function updateColorMapping(oldColor, newColor, index) {
-    if (newColor.match(/^#[0-9a-f]{6}$/i)) {
-        colorMapping[oldColor] = newColor;
-        document.getElementById('new-color-box-' + index).style.backgroundColor = newColor;
-        updateAnimationColors();
+function updateColorMapping(hexOrigColor, hexNewColor, index) {
+    if (hexNewColor.match(/^#[0-9a-f]{6}$/i)) {
+        colorMapping[hexOrigColor] = hexToRgbone(hexNewColor);
+        document.getElementById('new-color-box-' + index).style.backgroundColor = hexNewColor;
+        updateAnimationColors(hexOrigColor);
+    } else {
+        colorMapping[hexOrigColor] = hexToRgbone(hexOrigColor);
+        document.getElementById('new-color-box-' + index).style.backgroundColor = hexOrigColor;
+        updateAnimationColors(hexOrigColor);
     }
 }
 
-function updateAnimationColors() {
-    for (var oldColor in colorMapping) {
-        var newColor = colorMapping[oldColor];
-        replaceColorInAnimationData(animationData, oldColor, newColor);
-    }
-    loadAnimation(); // Reload the animation with updated colors
+function updateAnimationColors(hexOrigColor) {
+    foundIndex = 0;
+    replaceColorInAnimationData(animationData, hexOrigColor);
+    loadAnimation();
 }
 
-function replaceColorInAnimationData(data, oldColor, newColor) {
+function replaceColorInAnimationData(data, hexOrigColor) {
     if (typeof data === 'object' && data !== null) {
         Object.keys(data).forEach(function(key) {
             if (key === 'c' && data[key].k && Array.isArray(data[key].k)) {
-                var hexColor = rgbToHex(data[key].k.slice(0, 3).map(function(value) {
-                  return Math.floor(value * 255);
-                }).join(','));
-                if (hexColor === oldColor) {
-                    var newRgb = hexToRgb(newColor);
+                if (colorGroup[hexOrigColor].has(foundIndex)) {
+                    var newRgb = colorMapping[hexOrigColor];
                     data[key].k = [newRgb[0], newRgb[1], newRgb[2], data[key].k[3]]; // Replace with new color
                 }
+              foundIndex += 1;
             }
             // Gradient color
-            if (key === 'g' && data[key].k && data[key].k.k && Array.isArray(data[key].k.k) && data[key].k.k.length === 12) {
+            else if (key === 'g' && data[key].k && data[key].k.k && Array.isArray(data[key].k.k) && data[key].k.k.length === 12) {
                 [[1,4], [5,8], [9,12]].forEach(function(range){
-                    var hexColor = rgbToHex(data[key].k.k.slice(range[0], range[1]).map(function(value) {
-                      return Math.floor(value * 255);
-                    }).join(','));
-                    if (hexColor === oldColor) {
-                        var newRgb = hexToRgb(newColor);
+                    if (colorGroup[hexOrigColor].has(foundIndex)) {
+                        var newRgb = colorMapping[hexOrigColor];
                         var oldRgb = data[key].k.k;
                         oldRgb[range[0]] = newRgb[0];
                         oldRgb[range[0]+1] = newRgb[1];
                         oldRgb[range[0]+2] = newRgb[2];
                         data[key].k.k = oldRgb;
                     }
+                    foundIndex += 1;
                 });
             }
-            replaceColorInAnimationData(data[key], oldColor, newColor);
+            replaceColorInAnimationData(data[key], hexOrigColor);
         });
     } else if (Array.isArray(data)) {
         data.forEach(function(item) {
-            replaceColorInAnimationData(item, oldColor, newColor);
+            replaceColorInAnimationData(item, hexOrigColor);
         });
     }
 }
@@ -135,18 +133,24 @@ function findColors(data, colors) {
     if (typeof data === 'object' && data !== null) {
         Object.keys(data).forEach(function(key) {
             if (key === 'c' && data[key].k && Array.isArray(data[key].k)) {
-                var rgb = data[key].k.slice(0, 3).map(function(value) {
-                  return Math.floor(value * 255);
-                });
-                colors.add(rgb.join(','));
+                var hex = rgboneToHex(data[key].k.slice(0, 3));
+                if (!colors.has(hex)) {
+                    colors.add(hex);
+                    colorGroup[hex] = new Set();
+                }
+                colorGroup[hex].add(foundIndex);
+                foundIndex += 1;
             }
             // Gradient color
-            if (key === 'g' && data[key].k && data[key].k.k && Array.isArray(data[key].k.k) && data[key].k.k.length === 12) {
+            else if (key === 'g' && data[key].k && data[key].k.k && Array.isArray(data[key].k.k) && data[key].k.k.length === 12) {
                 [[1,4], [5,8], [9,12]].forEach(function(range){
-                    rgb = data[key].k.k.slice(range[0], range[1]).map(function(value) {
-                        return Math.floor(value * 255);
-                    });
-                    colors.add(rgb.join(','));
+                    var hex = rgboneToHex(data[key].k.k.slice(range[0], range[1]));
+                    if (!colors.has(hex)) {
+                        colors.add(hex);
+                        colorGroup[hex] = new Set();
+                    }
+                    colorGroup[hex].add(foundIndex);
+                    foundIndex += 1;
                 })
             }
             findColors(data[key], colors);
@@ -158,18 +162,38 @@ function findColors(data, colors) {
     }
 }
 
-function rgbToHex(rgb) {
+/*
+ * 形式
+ * 1. rgbten (i.e "255,16,11") 文字列
+ * 2. hex (i.e "#FFEEFF") 文字列
+ * 3. rgbone (i.e [0.5,0.3,1.0]) 配列
+ */
+// findColors ... 19
+
+// 0 〜 255 の10進数の3つの数字のカンマ区切り文字列を hex 文字列に
+function rgbtenToHex(rgb) {
     rgb = rgb.split(',').map(function(value) { return parseInt(value, 10); });
     return '#' + rgb.map(function(value) {
         return ('0' + value.toString(16)).slice(-2);
     }).join('');
 }
 
-function hexToRgb(hex) {
+// hex 文字列を 0 〜 1 の10進数の数字の配列に
+function hexToRgbone(hex) {
     var r = parseInt(hex.slice(1, 3), 16);
     var g = parseInt(hex.slice(3, 5), 16);
     var b = parseInt(hex.slice(5, 7), 16);
     return [r / 255, g / 255, b / 255];
+}
+
+function rgboneToRgbten(rgbone) {
+    return rgbone.map(function(value) {
+        return Math.floor(value * 255);
+    }).join(',');
+}
+
+function rgboneToHex(rgbone) {
+    return rgbtenToHex(rgboneToRgbten(rgbone));
 }
 
 function downloadJson(data, filename) {
