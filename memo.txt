@@ -70,51 +70,7 @@ https://lottiefiles.github.io/lottie-docs/schema/#/$defs/shapes/shape-list
 "c", "fc", "gc", "hc" のどれかが色要素らしい。
 
 
-メモ 色を表す要素
-====================
+lottie のライブラリで読み込むと、最適化が入り、無駄なデータが付与されるらしい。
 
-"c": {
-    "title": "Color",
-    "$ref": "#/$defs/animated-properties/color-value"
-},
-
-"fc": {
-    "title": "Fill Color",
-    "$ref": "#/$defs/helpers/color",
-    "default": [
-        0,
-        0,
-        0
-    ]
-},
-
-"sc": {
-    "title": "Color",
-    "description": "Color of the layer, unlike most other places, the color is a #rrggbb hex string",
-    "type": "string",
-    "default": ""
-},
-
-"hc": {
-    "title": "Highlight Color",
-    "$ref": "#/$defs/animated-properties/color-value"
-},
-
-"g": {
-    "title": "Colors",
-    "description": "Gradient colors",
-    "$ref": "#/$defs/animated-properties/gradient-colors"
-}
-
-"color"  : {
-    "type": "array",
-    "title": "Color",
-    "description": "Color as a [r, g, b] array with values in [0, 1]",
-    "items": {
-        "type": "number",
-        "minimum": 0,
-        "maximum": 1
-    },
-    "minItems": 3,
-    "maxItems": 4
-},
+Serializing animationData's latest state without extra keys like cache, __complete, __fnct, bezierData · Issue #2342 · airbnb/lottie-web
+https://github.com/airbnb/lottie-web/issues/2342

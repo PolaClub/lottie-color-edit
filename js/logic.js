@@ -1,4 +1,5 @@
 var animationData;
+var animationDataOrig;
 var animationInstance;
 var colorMapping = {};
 // オリジナルのカラーコードから、何番目に見つかったかどうかの配列を調査
@@ -17,8 +18,9 @@ document.getElementById('drop-area').ondrop = function(evt) {
 
     reader.onload = function(e) {
         animationData = JSON.parse(e.target.result);
-        loadAnimation();
+        animationDataOrig = JSON.parse(e.target.result);
         displayColors(animationData);
+        loadAnimation();
         // document.getElementById('drop-area').style.display = 'none';
         document.getElementById('color-table').style.display = 'block';
         document.getElementById('animation').style.display = 'block';
@@ -39,7 +41,7 @@ document.getElementById('reset-button').addEventListener('click', function() {
 });
 
 document.getElementById('save-button').addEventListener('click', function() {
-    downloadJson(animationData, 'animation.json');
+    downloadJson(animationDataOrig, 'animation.json');
 });
 
 function loadAnimation() {
@@ -93,6 +95,8 @@ function updateColorMapping(hexOrigColor, hexNewColor, index) {
 function updateAnimationColors(hexOrigColor) {
     foundIndex = 0;
     replaceColorInAnimationData(animationData, hexOrigColor);
+    foundIndex = 0;
+    replaceColorInAnimationData(animationDataOrig, hexOrigColor);
     loadAnimation();
 }
 
@@ -197,6 +201,7 @@ function rgboneToHex(rgbone) {
 }
 
 function downloadJson(data, filename) {
+    console.log('downloadJson:', data);
     var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
     var url = URL.createObjectURL(blob);
 
