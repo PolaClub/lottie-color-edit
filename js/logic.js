@@ -201,7 +201,6 @@ function rgboneToHex(rgbone) {
 }
 
 function downloadJson(data, filename) {
-    console.log('downloadJson:', data);
     var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
     var url = URL.createObjectURL(blob);
 
